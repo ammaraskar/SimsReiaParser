@@ -6,5 +6,5 @@
 
 ## Formatting
 
-`poetry run black`
+`poetry run black .`
 
