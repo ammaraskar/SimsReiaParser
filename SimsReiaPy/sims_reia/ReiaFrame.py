@@ -50,6 +50,20 @@ def read_32_by_32_pixel_block(stream: typing.BinaryIO) -> Image:
     return Image.frombytes("RGB", (32, 32), bytes(image_data))
 
 
+def compute_pixel_values_from_previous_frame(block, previous_block):
+    for i in range(block.size[0]):
+        for j in range(block.size[1]):
+            current_pixel = block.getpixel((i, j))
+            previous_pixel = previous_block.getpixel((i, j))
+
+            # For each color value in the RGB, compute `(current+prev) & 0xFF`
+            new_pixel = (
+                (previous + current) & 0xFF
+                for (previous, current) in zip(previous_pixel, current_pixel)
+            )
+            block.putpixel((i, j), tuple(new_pixel))
+
+
 def read_single_frame(
     stream: typing.BinaryIO, width: int, height: int, previous_frame: Image
 ) -> Image:
@@ -64,6 +78,10 @@ def read_single_frame(
             # the one from the previous frame.
             if stream.read(1) != b"\x00":
                 block = read_32_by_32_pixel_block(stream)
+                if previous_frame is not None:
+                    compute_pixel_values_from_previous_frame(
+                        block, previous_frame.image.crop((x, y, x + 32, y + 32))
+                    )
                 image.paste(block, (x, y))
                 continue
 
@@ -73,21 +91,6 @@ def read_single_frame(
             last_block = previous_frame.image.crop((x, y, x + 32, y + 32))
             image.paste(last_block, (x, y))
 
-    # If there is a previous frame, compute the proper pixel values.
-    if previous_frame is None:
-        return ReiaFrame(image)
-
-    for i in range(image.size[0]):
-        for j in range(image.size[1]):
-            current_pixel = image.getpixel((i, j))
-            previous_pixel = previous_frame.image.getpixel((i, j))
-
-            # For each color value in the RGB, compute `(current+prev) & 0xFF`
-            new_pixel = (
-                (previous + current) & 0xFF
-                for (previous, current) in zip(previous_pixel, current_pixel)
-            )
-            image.putpixel((i, j), tuple(new_pixel))
     return ReiaFrame(image)
 
 
@@ -110,7 +113,6 @@ def read_frames(
             previous_frame = frames[-1]
 
         frame_size = _read_uint32_le(stream)
-        print("Frame size is: ", frame_size)
         frames.append(read_single_frame(stream, width, height, previous_frame))
 
         # Frames get padded to be aligned on 2-byte boundaries, so consume the
