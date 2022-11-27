@@ -61,9 +61,10 @@ follows:
 * A byte is read and treated as a signed 8-bit integer `n`:
     - If the value is negative, then a single pixel value should be read and
       repeated `(-n) + 1` times.
-    - If the value is positive, then `n` unique pixel values should be read.
+    - If the value is positive, then `n + 1` unique pixel values should be read.
 
 * The pixel values retrieved are *relative* to the previous frame unless it is
   the first frame of the file. So a change from a red value of `200` to `205` is
-  encoded as `5`. In order to get the actual pixel value you must use
-  `(previous + current) & 0xFF`.
+  encoded as `5`. A change from `255` to `0` is encoded as `1`.
+  
+  In order to get the actual pixel value you must use `(previous + current) & 0xFF`.
