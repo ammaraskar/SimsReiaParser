@@ -4,7 +4,7 @@ import typing
 
 
 class ReiaFile:
-    """A .reia audio file.
+    """A .reia video file.
     Note that all frames are held uncompressed in memory.
 
     Attributes
