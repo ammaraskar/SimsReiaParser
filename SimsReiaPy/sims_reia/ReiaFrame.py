@@ -1,5 +1,5 @@
 from . import _read_uint32_le
-from PIL import Image
+from PIL import Image, ImageChops
 import typing
 
 
@@ -50,20 +50,6 @@ def read_32_by_32_pixel_block(stream: typing.BinaryIO) -> Image:
     return Image.frombytes("RGB", (32, 32), bytes(image_data))
 
 
-def compute_pixel_values_from_previous_frame(block, previous_block):
-    for i in range(block.size[0]):
-        for j in range(block.size[1]):
-            current_pixel = block.getpixel((i, j))
-            previous_pixel = previous_block.getpixel((i, j))
-
-            # For each color value in the RGB, compute `(current+prev) & 0xFF`
-            new_pixel = (
-                (previous + current) & 0xFF
-                for (previous, current) in zip(previous_pixel, current_pixel)
-            )
-            block.putpixel((i, j), tuple(new_pixel))
-
-
 def read_single_frame(
     stream: typing.BinaryIO, width: int, height: int, previous_frame: Image
 ) -> Image:
@@ -79,9 +65,11 @@ def read_single_frame(
             if stream.read(1) != b"\x00":
                 block = read_32_by_32_pixel_block(stream)
                 if previous_frame is not None:
-                    compute_pixel_values_from_previous_frame(
-                        block, previous_frame.image.crop((x, y, x + 32, y + 32))
-                    )
+                    previous_block = previous_frame.image.crop((x, y, x + 32, y + 32))
+                    # Compute `(x+y) & 0xFF` for each pixel in this block and
+                    # the previous block. (The blocks encode the diff from the
+                    # previous frame to the current frame).
+                    block = ImageChops.add_modulo(block, previous_block)
                 image.paste(block, (x, y))
                 continue
 
