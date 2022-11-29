@@ -51,6 +51,6 @@ def test_encodes_to_expected_file():
     assert roundtripped_file.width == 128
     assert roundtripped_file.frames_per_second == 10
 
-    roundtripped_frames = roundtripped_file.frames
+    roundtripped_frames = list(roundtripped_file.frames)
     assert_images_are_same(roundtripped_frames[0].image, real_frame_one)
     assert_images_are_same(roundtripped_frames[1].image, real_frame_two)

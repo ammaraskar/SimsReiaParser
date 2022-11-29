@@ -82,10 +82,12 @@ def read_single_frame(
     return ReiaFrame(image)
 
 
-def read_frames(
+def create_frame_reader(
     stream: typing.BinaryIO, width: int, height: int
-) -> typing.List[ReiaFrame]:
-    frames = []
+) -> typing.Iterator[ReiaFrame]:
+    """Returns a generator that will return Reia frames from the given stream
+    at a particular width and height."""
+    previous_frame = None
 
     # Keep reading frames until the end of the file.
     frame_magic = stream.read(4)
@@ -96,12 +98,10 @@ def read_frames(
                 f"Unexpected magic in start-of-frame, expected 'frme' got {frame_magic}"
             )
 
-        previous_frame = None
-        if len(frames) > 0:
-            previous_frame = frames[-1]
-
         frame_size = _read_uint32_le(stream)
-        frames.append(read_single_frame(stream, width, height, previous_frame))
+        frame = read_single_frame(stream, width, height, previous_frame)
+        previous_frame = frame
+        yield frame
 
         # Frames get padded to be aligned on 2-byte boundaries, so consume the
         # padding (if any).
@@ -111,4 +111,9 @@ def read_frames(
         # Read the next set of magic.
         frame_magic = stream.read(4)
 
-    return frames
+
+def read_frames(stream: typing.BinaryIO, width: int, height: int) -> typing.List[ReiaFrame]:
+    """A convenience non-generated version of create_frame_reader that holds all
+    frames in memory.
+    """
+    return list(create_frame_reader(stream, width, height))

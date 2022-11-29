@@ -1,5 +1,5 @@
 from . import _read_uint32_le
-from .ReiaFrame import ReiaFrame, read_frames
+from .ReiaFrame import ReiaFrame, create_frame_reader
 import typing
 
 
@@ -20,13 +20,15 @@ class ReiaFile:
         The framerate of the video.
 
     frames
-        The individual frames of the video.
+        An iterator over the individual frames of the video. Note that this
+        can only be iterated over once, so save any frames you need or turn
+        this into a list.
     """
 
     width: int
     height: int
     frames_per_second: float
-    frames: typing.List[ReiaFrame]
+    frames: typing.Iterator[ReiaFrame]
 
 
 def read_from_file(stream: typing.BinaryIO) -> ReiaFile:
@@ -70,7 +72,6 @@ def read_from_file(stream: typing.BinaryIO) -> ReiaFile:
 
     # Read the expected number of frames.
     num_frames = _read_uint32_le(stream)
-    reia_file.frames = read_frames(stream, reia_file.width, reia_file.height)
-    assert num_frames == len(reia_file.frames)
+    reia_file.frames = create_frame_reader(stream, reia_file.width, reia_file.height)
 
     return reia_file
