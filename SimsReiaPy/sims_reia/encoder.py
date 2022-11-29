@@ -72,7 +72,12 @@ def write_reia_frames(frames: typing.List[ReiaFrame], output_stream: typing.Bina
             assert frame.image.size == previous_frame_image.size
 
         frame = write_reia_frame(frame.image, previous_frame_image)
+        output_stream.write(b"frme")
+        output_stream.write(pack_uint32_le(len(frame)))
         output_stream.write(frame)
+        # Add padding to align frames to nearest 2-byte boundary if needed.
+        if len(frame) % 2 != 0:
+            output_stream.write(b"\x00")
 
 
 def write_reia_frame(frame, previous_frame) -> bytes:
@@ -96,9 +101,6 @@ def write_reia_frame(frame, previous_frame) -> bytes:
 
             block = write_reia_block(current_block, previous_block)
             output.extend(block)
-            # If the block length is not a multiple of 2, add padding.
-            if len(block) % 2 != 0:
-                output.extend(b"\x00")
 
     return output
 
@@ -134,17 +136,14 @@ def find_identical_runs(raw_bytes: bytes):
 
 
 def write_reia_block(block, previous_block) -> bytearray:
-    # Write the magic header for frames.
-    output = bytearray(b"frme")
     # If this block is exactly identical to the previous, we can skip encoding
     # it.
     if previous_block is not None:
         diff = ImageChops.difference(block, previous_block)
         if diff.getbbox() is None:
-            output.extend(b"\x00")
-            return output
+            return bytearray(b"\x00")
 
-    output.extend(b"\x01")
+    output = bytearray(b"\x01")
     # If there is a previous block we need to compute a diff of the pixel values
     # between this and the last one.
     if previous_block is not None:
@@ -156,6 +155,8 @@ def write_reia_block(block, previous_block) -> bytearray:
     # First run over all the values and detect runs of the same color.
     identical_runs = find_identical_runs(raw_bytes)
 
+    # Just so sanity check.
+    pixels_encoded = 0
     # Now that we have the list of runs, we can iterate through the indices and
     # perform RLE encoding.
     i = 0
@@ -171,6 +172,7 @@ def write_reia_block(block, previous_block) -> bytearray:
 
         # If we've got a list of unique colors built up, put them in first.
         if len(unique_colors) > 0:
+            pixels_encoded += len(unique_colors)
             emit_non_repeated_colors(unique_colors, output)
             unique_colors = []
 
@@ -178,6 +180,7 @@ def write_reia_block(block, previous_block) -> bytearray:
         assert color == identical_color
 
         num_repeated = (run_end_idx - run_start_idx) // 3
+        pixels_encoded += num_repeated
         # RLE uses a byte to indicate number of repeats, so this shouldn't
         # exceed max(int8) = 127
         assert num_repeated <= 128
@@ -194,8 +197,10 @@ def write_reia_block(block, previous_block) -> bytearray:
     # If we've still got unique colors going from the end of the loop, emit
     # them now.
     if len(unique_colors) > 0:
+        pixels_encoded += len(unique_colors)
         emit_non_repeated_colors(unique_colors, output)
 
+    assert pixels_encoded == 32 * 32
     return output
 
 
