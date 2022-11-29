@@ -5,3 +5,4 @@ def _read_uint32_le(stream) -> int:
 
 from .ReiaFile import ReiaFile, read_from_file
 from .ReiaFrame import ReiaFrame
+from .encoder import write_reia_file
