@@ -1,7 +1,7 @@
 from sims_reia import ReiaFile, ReiaFrame, write_reia_file
 from sims_reia import encoder
 from sims_reia.ReiaFrame import read_frames
-from .ReiaFrame_test import TEST_DATA_DIRECTORY
+from .ReiaFrame_test import TEST_DATA_DIRECTORY, assert_images_are_same
 
 from io import BytesIO
 
@@ -44,7 +44,12 @@ def test_encodes_to_expected_file():
     output = BytesIO()
     write_reia_file(test_file, output)
 
+    with open("oof_test.reia", "wb") as f:
+        f.write(output.getvalue())
+
     # Try to round-trip the data.
-    print(output.getvalue()[:50])
     output.seek(0x2C)
-    frames = read_frames(output, width=128, height=128)
+    roundtripped_frames = read_frames(output, width=128, height=128)
+
+    assert_images_are_same(roundtripped_frames[0].image, real_frame_one)
+    assert_images_are_same(roundtripped_frames[1].image, real_frame_two)

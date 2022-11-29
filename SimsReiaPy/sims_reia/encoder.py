@@ -150,7 +150,8 @@ def write_reia_block(block, previous_block) -> bytearray:
         block = ImageChops.subtract_modulo(block, previous_block)
 
     # Iterate over each the bytes and start calculating and writing runs.
-    raw_bytes = block.tobytes("raw")
+    raw_bytes = block.tobytes("raw", "BGR")
+    assert len(raw_bytes) == 32 * 32 * 3
 
     # First run over all the values and detect runs of the same color.
     identical_runs = find_identical_runs(raw_bytes)
@@ -181,11 +182,12 @@ def write_reia_block(block, previous_block) -> bytearray:
 
         num_repeated = (run_end_idx - run_start_idx) // 3
         pixels_encoded += num_repeated
-        # RLE uses a byte to indicate number of repeats, so this shouldn't
-        # exceed max(int8) = 127
-        assert num_repeated <= 128
+        # A negative RLE byte n indiciates the next color should be repeated
+        # (-n + 1) number of times. Since min(int8) = -128 we can only repeat
+        # a color a maximum of 129 times with this scheme.
+        assert num_repeated <= 129
 
-        rle_byte = num_repeated - 1
+        rle_byte = -(num_repeated - 1)
         rle_byte = rle_byte.to_bytes(1, byteorder="little", signed=True)
 
         output.extend(rle_byte)
@@ -205,20 +207,20 @@ def write_reia_block(block, previous_block) -> bytearray:
 
 
 def emit_non_repeated_colors(unique_colors, output: bytearray):
-    # A negative RLE byte indicates ((-n) + 1) unique values are coming.
+    # A positive RLE byte n indicates (n + 1) unique values are coming.
     #
     # Since the n is a signed 8-bit int we can't be smaller than
-    #   min(int8) = -128
-    # so we can only encode 129 repeats at maximum.
+    #   max(int8) = 127
+    # so we can only encode 128 repeats at maximum.
     #
     # This loop splits up unique_colors into chunks of 129 if needed and spits
     # them out.
-    for i in range(0, len(unique_colors), 129):
-        colors_chunk = unique_colors[i : i + 129]
+    for i in range(0, len(unique_colors), 128):
+        colors_chunk = unique_colors[i : i + 128]
 
-        assert len(colors_chunk) <= 129
+        assert len(colors_chunk) <= 128
 
-        rle_byte = -(len(colors_chunk) - 1)
+        rle_byte = len(colors_chunk) - 1
         rle_byte = rle_byte.to_bytes(1, byteorder="little", signed=True)
         output.extend(rle_byte)
         output.extend(b"".join(colors_chunk))
