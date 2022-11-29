@@ -49,3 +49,4 @@ def test_metadata_is_correct_on_known_file():
     assert reia_file.frames_per_second == 10.0
     assert reia_file.width == 128
     assert reia_file.height == 128
+    assert reia_file.num_frames == 0

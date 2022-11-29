@@ -35,11 +35,13 @@ def test_encodes_to_expected_file():
     real_frame_one = Image.open(TEST_DATA_DIRECTORY / "frame1.png").convert("RGB")
     real_frame_two = Image.open(TEST_DATA_DIRECTORY / "frame2.png").convert("RGB")
 
-    test_file = ReiaFile()
-    test_file.width = 128
-    test_file.height = 128
-    test_file.frames_per_second = 10
-    test_file.frames = [ReiaFrame(real_frame_one), ReiaFrame(real_frame_two)]
+    test_file = ReiaFile(
+        width=128,
+        height=128,
+        frames_per_second=10,
+        num_frames=2,
+        frames=iter([ReiaFrame(real_frame_one), ReiaFrame(real_frame_two)]),
+    )
 
     output = BytesIO()
     write_reia_file(test_file, output)

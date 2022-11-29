@@ -28,12 +28,22 @@ class ReiaFile:
     width: int
     height: int
     frames_per_second: float
+    num_frames: int
     frames: typing.Iterator[ReiaFrame]
+
+    def __init__(self, width, height, frames_per_second, num_frames, frames) -> None:
+        # Assert that width and height are divisible by 32.
+        assert (width % 32) == 0
+        self.width = width
+        assert (height % 32) == 0
+        self.height = height
+
+        self.frames_per_second = frames_per_second
+        self.num_frames = num_frames
+        self.frames = frames
 
 
 def read_from_file(stream: typing.BinaryIO) -> ReiaFile:
-    reia_file = ReiaFile()
-
     # Assert that the file starts with the proper magic bytes.
     riff_file_magic = stream.read(4)
     if riff_file_magic != b"RIFF":
@@ -57,21 +67,18 @@ def read_from_file(stream: typing.BinaryIO) -> ReiaFile:
     # This value is checked to be always 1 in the real code. Just assert here.
     assert _read_uint32_le(stream) == 1
 
-    reia_file.width = _read_uint32_le(stream)
-    reia_file.height = _read_uint32_le(stream)
-    # Assert that width and height are divisible by 32.
-    assert (reia_file.width % 32) == 0
-    assert (reia_file.height % 32) == 0
+    width = _read_uint32_le(stream)
+    height = _read_uint32_le(stream)
 
     # Frames per second.
     frames_per_second_numerator = _read_uint32_le(stream)
     frames_per_second_denominator = _read_uint32_le(stream)
-    reia_file.frames_per_second = (
+    frames_per_second = (
         float(frames_per_second_numerator) / frames_per_second_denominator
     )
 
     # Read the expected number of frames.
     num_frames = _read_uint32_le(stream)
-    reia_file.frames = create_frame_reader(stream, reia_file.width, reia_file.height)
+    frames = create_frame_reader(stream, width, height)
 
-    return reia_file
+    return ReiaFile(width, height, frames_per_second, num_frames, frames)

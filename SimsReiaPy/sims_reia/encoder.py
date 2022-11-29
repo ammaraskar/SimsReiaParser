@@ -51,7 +51,7 @@ def write_reia_file(file: ReiaFile, output_stream: typing.BinaryIO):
     output_stream.write(pack_uint32_le(fps_numerator))
     output_stream.write(pack_uint32_le(fps_denominator))
     # Number of frames.
-    output_stream.write(pack_uint32_le(len(file.frames)))
+    output_stream.write(pack_uint32_le(file.num_frames))
 
     # Write out the frames.
     write_reia_frames(file.frames, output_stream)
@@ -64,20 +64,23 @@ def write_reia_file(file: ReiaFile, output_stream: typing.BinaryIO):
     output_stream.write(pack_uint32_le(file_size - 8))
 
 
-def write_reia_frames(frames: typing.List[ReiaFrame], output_stream: typing.BinaryIO):
-    for i, frame in enumerate(frames):
-        previous_frame_image = None
-        if i > 0:
-            previous_frame_image = frames[i - 1].image
-            assert frame.image.size == previous_frame_image.size
-
-        frame = write_reia_frame(frame.image, previous_frame_image)
+def write_reia_frames(
+    frames: typing.Iterator[ReiaFrame], output_stream: typing.BinaryIO
+):
+    previous_frame_image = None
+    for frame in frames:
+        encoded_frame = write_reia_frame(frame.image, previous_frame_image)
         output_stream.write(b"frme")
-        output_stream.write(pack_uint32_le(len(frame)))
-        output_stream.write(frame)
+        output_stream.write(pack_uint32_le(len(encoded_frame)))
+        output_stream.write(encoded_frame)
         # Add padding to align frames to nearest 2-byte boundary if needed.
-        if len(frame) % 2 != 0:
+        if len(encoded_frame) % 2 != 0:
             output_stream.write(b"\x00")
+
+        # Make sure they're all the same resolution!
+        if previous_frame_image is not None:
+            assert frame.image.size == previous_frame_image.size
+        previous_frame_image = frame.image
 
 
 def write_reia_frame(frame, previous_frame) -> bytes:

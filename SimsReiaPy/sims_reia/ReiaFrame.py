@@ -112,7 +112,9 @@ def create_frame_reader(
         frame_magic = stream.read(4)
 
 
-def read_frames(stream: typing.BinaryIO, width: int, height: int) -> typing.List[ReiaFrame]:
+def read_frames(
+    stream: typing.BinaryIO, width: int, height: int
+) -> typing.List[ReiaFrame]:
     """A convenience non-generated version of create_frame_reader that holds all
     frames in memory.
     """
