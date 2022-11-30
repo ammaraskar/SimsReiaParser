@@ -1,9 +1,11 @@
 [tool.poetry]
 name = "sims_reia"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Ammar Askar <ammar@ammaraskar.com>"]
 readme = "README.md"
+homepage = "https://github.com/ammaraskar/SimsReiaParser"
+repository = "https://github.com/ammaraskar/SimsReiaParser/tree/main/SimsReiaPy"
 
 [tool.poetry.dependencies]
 python = "^3.8"
