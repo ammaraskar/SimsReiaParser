@@ -2,69 +2,80 @@ from gooey import Gooey, GooeyParser
 from PIL import Image
 import av
 
-from sims_reia import ReiaFile, ReiaFrame, write_reia_file
+from sims_reia import ReiaFile, ReiaFrame, write_reia_file, read_from_file
 
 import sys
-import textwrap
 
 
 def run_converter_to_reia(args):
-    print(args)
+    try:
+        container = av.open(args.input_video)
+    except av.error.InvalidDataError:
+        print("[Error] Input file could not be opened as a video")
+        sys.exit(1)
 
-    container = av.open(args.input_video)
     video = container.streams.video[0]
 
-    print(container.streams)
-    print(
-        video.height,
-        video.width,
-    )
-    print(container)
+    # Sims needs .reia resolutions to be a square n by n.
+    needs_resize = True
+    if args.resize:
+        target_width = 192
+        target_height = 192
+    else:
+        if (
+            video.width == video.height
+            and (video.width % 32) == 0
+            and (video.height % 32) == 0
+        ):
+            needs_resize = False
+        target_resolution = max(video.width, video.height)
+        target_width = (target_resolution // 32) * 32
+        target_height = (target_resolution // 32) * 32
+    print(f"Output resolution: {target_width}x{target_height}")
 
-    if video.height != video.width and not args.resize_video:
-        print(
-            "Video needs to be a square resolution, tick resize if you automatic resizing"
-        )
-        sys.exit(1)
-    if ((video.height % 32) != 0) and not args.resize_video:
-        print("Video resolution needs to be a multiple of 32, e.g 128x128")
-        sys.exit(1)
-
-    target_resolution = None
-    # Okay not a multiple of 32 and they requested a resize.
-    if (video.height % 32) != 0 and args.resize_video:
-        target_resolution = max(video.height, video.width)
-        # Find the nearest multiple of 32.
-        target_resolution = (target_resolution // 32) * 32
+    # This is really horrible but if `video.frames` returns 0 we iterate decoding
+    # the whole video once to get the number of frames.
+    num_frames = video.frames
+    if num_frames == 0:
+        for _ in container.decode(video=0):
+            num_frames += 1
+        container = av.open(args.input_video)
+        video = container.streams.video[0]
 
     def frame_generator():
         for frame in container.decode(video=0):
-            print(f"progress: {frame.index}/{video.frames}")
+            print(f"progress: {frame.index}/{num_frames}")
             as_image = frame.to_image()
-            if target_resolution is not None:
+            if needs_resize:
                 as_image = as_image.resize(
-                    (target_resolution, target_resolution),
-                    resample=Image.Resampling.LANCZOS,
+                    (target_width, target_height), resample=Image.Resampling.LANCZOS
                 )
             yield ReiaFrame(as_image)
 
-    file_resolution = video.height
-    if target_resolution is not None:
-        file_resolution = target_resolution
+    fps = video.guessed_rate
+    # Just assume a default fps if libav can't guess one :/
+    if fps is None:
+        fps = 24
 
     reia_file = ReiaFile(
-        width=file_resolution,
-        height=file_resolution,
-        frames_per_second=video.average_rate,
-        num_frames=video.frames,
+        width=target_width,
+        height=target_height,
+        frames_per_second=fps,
+        num_frames=num_frames,
         frames=frame_generator(),
     )
     with open(args.output_reia, "wb") as f:
         write_reia_file(reia_file, f)
+    print(f"Wrote out {args.output_reia}")
 
 
 def run_extract_from_reia(args):
-    pass
+    with open(args.input_reia, "rb") as f:
+        reia_file = read_from_file(f)
+
+        for i, frame in enumerate(reia_file.frames):
+            print(f"progress: {i}/{reia_file.num_frames}")
+            frame.image.save(f"{args.output_folder}/reia_frame{i:04}.png")
 
 
 def initialize_convert_to_reia_parser(parser):
@@ -72,26 +83,24 @@ def initialize_convert_to_reia_parser(parser):
     input_group.add_argument(
         "input_video",
         metavar="Input video file",
-        help=textwrap.dedent(
-            """\
-        The video file to convert (.gif/.mp4/.mkv etc)
-        
-        Resolution should be a square and a multiple of 32 such as:
-        128x128, 256x256, 512x512"""
+        help=(
+            "The video file to convert (.gif/.mp4/.mkv etc)\n"
+            "\n"
+            "Try to keep the resolution low (under 256 pixels in width and height) and "
+            "use an aspect ratio of 4:3 for best results."
         ),
         widget="FileChooser",
     )
     input_group.add_argument(
-        "--resize-video",
-        metavar="Resize video",
-        default=False,
+        "--resize",
+        metavar="Resize to 192x192",
+        default=True,
         action="store_true",
-        help=textwrap.dedent(
-            """\
-        Resize the input video frames to the resolution requirements.
-        
-        (Note it is better to do this yourself in the video before-hand as
-         this may degrade the quality.)"""
+        help=(
+            "Automatically resize video to default Sims 2 resolution.\n"
+            "\n"
+            "(Disabling this may lead to very large .reia files for higher "
+            "resolution videos.)"
         ),
         widget="BlockCheckbox",
     )

@@ -15,4 +15,4 @@ existing `.reia` files.
 
 ### Packaging for Distribution
 
-`poetry run pyinstaller --windowed reiatool/reiatoo.pyw`
+`poetry run pyinstaller --exclude numpy --windowed --onefile reiatool/reiatool.py`
