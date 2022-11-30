@@ -26,6 +26,6 @@ jobs:
     - name: Install dependencies
       run: cd SimsReiaParser && poetry install
     - name: Check formatting
-      run: cd SimsReiaParser && poetry run black --check .
+      run: poetry run black --check .
     - name: Run tests
-      run: cd SimsReiaParser && poetry run pytest
+      run: poetry run pytest
