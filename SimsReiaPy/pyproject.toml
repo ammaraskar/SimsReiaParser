@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sims_reia"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["Ammar Askar <ammar@ammaraskar.com>"]
 readme = "README.md"
