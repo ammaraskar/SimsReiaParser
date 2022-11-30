@@ -185,16 +185,7 @@ def write_reia_block(block, previous_block) -> bytearray:
 
         num_repeated = (run_end_idx - run_start_idx) // 3
         pixels_encoded += num_repeated
-        # A negative RLE byte n indiciates the next color should be repeated
-        # (-n + 1) number of times. Since min(int8) = -128 we can only repeat
-        # a color a maximum of 129 times with this scheme.
-        assert num_repeated <= 129
-
-        rle_byte = -(num_repeated - 1)
-        rle_byte = rle_byte.to_bytes(1, byteorder="little", signed=True)
-
-        output.extend(rle_byte)
-        output.extend(color)
+        emit_repeated_color(num_repeated, color, output)
 
         # Skip to the end index.
         i = run_end_idx
@@ -207,6 +198,28 @@ def write_reia_block(block, previous_block) -> bytearray:
 
     assert pixels_encoded == 32 * 32
     return output
+
+
+def emit_repeated_color(num_repeated, color, output: bytearray):
+    # A negative RLE byte n indiciates the next color should be repeated
+    # (-n + 1) number of times. Since min(int8) = -128 we can only repeat
+    # a color a maximum of 129 times with this scheme.
+    #
+    # This splits up the repeats into runs of 129.
+    for _ in range(num_repeated // 129):
+        rle_byte = -(129 - 1)
+        rle_byte = rle_byte.to_bytes(1, byteorder="little", signed=True)
+
+        output.extend(rle_byte)
+        output.extend(color)
+    
+    remainder = num_repeated % 129
+    if remainder > 0:
+        rle_byte = -(remainder - 1)
+        rle_byte = rle_byte.to_bytes(1, byteorder="little", signed=True)
+
+        output.extend(rle_byte)
+        output.extend(color)
 
 
 def emit_non_repeated_colors(unique_colors, output: bytearray):

@@ -56,3 +56,23 @@ def test_encodes_to_expected_file():
     roundtripped_frames = list(roundtripped_file.frames)
     assert_images_are_same(roundtripped_frames[0].image, real_frame_one)
     assert_images_are_same(roundtripped_frames[1].image, real_frame_two)
+
+
+def test_encodes_image_with_just_one_color():
+    completely_black = Image.new('RGB', (128, 128), color=0)
+    test_file = ReiaFile(
+        width=128,
+        height=128,
+        frames_per_second=10,
+        num_frames=2,
+        frames=iter([ReiaFrame(completely_black)]),
+    )
+
+    output = BytesIO()
+    write_reia_file(test_file, output)
+
+    # Try to round-trip the data.
+    output.seek(0)
+    roundtripped_file = read_from_file(output)
+    roundtripped_frames = list(roundtripped_file.frames)
+    assert_images_are_same(roundtripped_frames[0].image, completely_black)
