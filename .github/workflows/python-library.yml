@@ -24,8 +24,8 @@ jobs:
       with:
         poetry-version: "1.2.2"
     - name: Install dependencies
-      run: cd SimsReiaParser && poetry install
+      run: cd SimsReiaPy && poetry install
     - name: Check formatting
-      run: poetry run black --check .
+      run: cd SimsReiaPy && poetry run black --check .
     - name: Run tests
-      run: poetry run pytest
+      run: cd SimsReiaPy && poetry run pytest
