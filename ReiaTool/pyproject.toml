@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "reiatool"
+version = "0.1.0"
+description = ""
+authors = ["Ammar Askar <ammar@ammaraskar.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12"
+sims-reia = {path = "../SimsReiaPy"}
+gooey = "^1.0.8.1"
+av = "^10.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pyinstaller = "^5.6.2"
+black = "^22.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
