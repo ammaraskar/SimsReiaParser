@@ -21,7 +21,7 @@ jobs:
     - name: Install poetry
       uses: abatilo/actions-poetry@v2
       with:
-        poetry-version: ${{ matrix.poetry-version }}
+        poetry-version: "1.2.2"
     - name: Install dependencies
       run: cd SimsReiaParser && poetry install
     - name: Check formatting
