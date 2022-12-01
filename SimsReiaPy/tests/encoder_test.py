@@ -59,7 +59,7 @@ def test_encodes_to_expected_file():
 
 
 def test_encodes_image_with_just_one_color():
-    completely_black = Image.new('RGB', (128, 128), color=0)
+    completely_black = Image.new("RGB", (128, 128), color=0)
     test_file = ReiaFile(
         width=128,
         height=128,

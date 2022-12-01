@@ -212,7 +212,7 @@ def emit_repeated_color(num_repeated, color, output: bytearray):
 
         output.extend(rle_byte)
         output.extend(color)
-    
+
     remainder = num_repeated % 129
     if remainder > 0:
         rle_byte = -(remainder - 1)
