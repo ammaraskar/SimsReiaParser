@@ -24,7 +24,7 @@ jobs:
       with:
         poetry-version: "1.2.2"
     - name: Work around wxpython attrdict3 issue
-      run: cd ReiaTool && poetry add attrdict3
+      run: cd ReiaTool && poetry run pip install attrdict3
     - name: Install dependencies
       run: cd ReiaTool && poetry install
     - name: Check formatting
