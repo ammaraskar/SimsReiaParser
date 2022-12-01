@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - .github/workflows/python-library.yml
-      - SimsReiaParser/**
+      - SimsReiaPy/**
 
 jobs:
   build:
