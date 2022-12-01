@@ -29,10 +29,6 @@ jobs:
       uses: abatilo/actions-poetry@v2
       with:
         poetry-version: "1.2.2"
-    - name: Work around wxpython attrdict3 issue
-      run: |
-        cd ReiaTool
-        poetry run pip install attrdict3
     - name: Install dependencies
       run: |
         cd ReiaTool
@@ -41,6 +37,8 @@ jobs:
       run: |
         cd ReiaTool
         poetry run pyinstaller --exclude numpy --windowed --onefile reiatool/reiatool.py
+    - name: Add version name to executable
+      run: move ReiaTool/dist/reiatool.exe reiatool-${{github.ref_name }}.exe
 #    - name: Release
 #      uses: softprops/action-gh-release@v1
 #      with:
