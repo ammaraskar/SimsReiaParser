@@ -29,6 +29,10 @@ jobs:
       uses: abatilo/actions-poetry@v2
       with:
         poetry-version: "1.2.2"
+    - name: Work around wxpython attrdict3 issue
+      run: |
+        cd ReiaTool
+        poetry add attrdict3
     - name: Install dependencies
       run: |
         cd ReiaTool
