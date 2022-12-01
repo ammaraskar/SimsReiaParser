@@ -7,6 +7,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "attrdict3"
+version = "2.0.2"
+description = "A dict with attribute-style access"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
+
+[[package]]
 name = "av"
 version = "10.0.0"
 description = "Pythonic bindings for FFmpeg's libraries."
@@ -280,12 +291,16 @@ six = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "6291f03ad182ba5d92a8245dfe10c6d12b81aad85eee7c52aa6410d1e30fbd4c"
+content-hash = "08d82e0ab770563ecd5c4e891037addcf9d4d2e8937759549032d26284d3a6c5"
 
 [metadata.files]
 altgraph = [
     {file = "altgraph-0.17.3-py2.py3-none-any.whl", hash = "sha256:c8ac1ca6772207179ed8003ce7687757c04b0b71536f81e2ac5755c6226458fe"},
     {file = "altgraph-0.17.3.tar.gz", hash = "sha256:ad33358114df7c9416cdb8fa1eaa5852166c505118717021c6a8c7c7abbd03dd"},
+]
+attrdict3 = [
+    {file = "attrdict3-2.0.2-py2.py3-none-any.whl", hash = "sha256:a98b72de6a3f20b0997cc7efbba3555af6558ed9a97de4468a3f81cac11595dc"},
+    {file = "attrdict3-2.0.2.tar.gz", hash = "sha256:004c171ca1120cc1755701db99d7fa4944afb1e68950434efdaa542513335fe8"},
 ]
 av = [
     {file = "av-10.0.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d19bb54197155d045a2b683d993026d4bcb06e31c2acad0327e3e8711571899c"},
