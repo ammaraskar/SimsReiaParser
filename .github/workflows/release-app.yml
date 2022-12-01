@@ -1,0 +1,45 @@
+name: CraftRelease
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"*
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    # Upx is used to make smaller executables with pyinstaller. Download and
+    # extract it and add it to the PATH.
+    - name: Install upx
+      run: |
+        Invoke-RestMethod -Uri "https://github.com/upx/upx/releases/download/v4.0.1/upx-4.0.1-win64.zip" -OutFile "upx.zip"
+        Expand-Archive upx.zip -DestinationPath "upx" -Force
+        Add-Content $env:GITHUB_PATH $pwd\upx\upx-4.0.1-win64\
+    - name: Install poetry
+      uses: abatilo/actions-poetry@v2
+      with:
+        poetry-version: "1.2.2"
+    - name: Install dependencies
+      run: |
+        cd ReiaTool
+        poetry install
+    - name: Build executable
+      run: |
+        cd ReiaTool
+        poetry run pyinstaller --exclude numpy --windowed --onefile reiatool/reiatool.py
+#    - name: Release
+#      uses: softprops/action-gh-release@v1
+#      with:
+#        files: |
+#          ReiaTool/dist/reiatool.exe
+#          LICENSE
