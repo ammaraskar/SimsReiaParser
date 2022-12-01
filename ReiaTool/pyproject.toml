@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "reiatool"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Ammar Askar <ammar@ammaraskar.com>"]
 readme = "README.md"
