@@ -38,10 +38,10 @@ jobs:
         cd ReiaTool
         poetry run pyinstaller --exclude numpy --windowed --onefile reiatool/reiatool.py
     - name: Add version name to executable
-      run: move ReiaTool/dist/reiatool.exe reiatool-${{github.ref_name }}.exe
-#    - name: Release
-#      uses: softprops/action-gh-release@v1
-#      with:
-#        files: |
-#          ReiaTool/dist/reiatool.exe
-#          LICENSE
+      run: move ReiaTool/dist/reiatool.exe reiatool-${{ github.ref_name }}.exe
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          reiatool-${{ github.ref_name }}.exe
+          LICENSE
