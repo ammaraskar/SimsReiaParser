@@ -9,7 +9,6 @@ readme = "README.md"
 python = ">=3.8,<3.12"
 sims-reia = {path = "../SimsReiaPy"}
 # Workaround for wxpython not having this in their dependencies...
-attrdict3 = "^2.0.2"
 gooey = "^1.0.8.1"
 av = "^10.0.0"
 
