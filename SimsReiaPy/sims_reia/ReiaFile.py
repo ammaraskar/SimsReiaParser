@@ -32,10 +32,7 @@ class ReiaFile:
     frames: typing.Iterator[ReiaFrame]
 
     def __init__(self, width, height, frames_per_second, num_frames, frames) -> None:
-        # Assert that width and height are divisible by 32.
-        assert (width % 32) == 0
         self.width = width
-        assert (height % 32) == 0
         self.height = height
 
         self.frames_per_second = frames_per_second

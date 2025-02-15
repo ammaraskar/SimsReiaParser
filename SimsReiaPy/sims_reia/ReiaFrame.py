@@ -1,4 +1,5 @@
 from . import _read_uint32_le
+import math
 from PIL import Image, ImageChops
 import typing
 
@@ -56,12 +57,14 @@ def read_single_frame(
     image = Image.new("RGB", (width, height))
 
     # Frames are encoded as blocks of 32x32 pixels.
-    for i in range(width // 32):
-        for j in range(height // 32):
+    width_blocks = int(math.ceil(width / 32))
+    height_blocks = int(math.ceil(height / 32))
+    for i in range(height_blocks):
+        for j in range(width_blocks):
             # x and y coordinates where the top-left corner is 0,0
             x, y = (j * 32), (i * 32)
-            # First bit tells us if we should expect a new 32x32 pixel block or re-use
-            # the one from the previous frame.
+            # First byte tells us if we should expect a new 32x32 pixel block
+            # or re-use the one from the previous frame.
             if stream.read(1) != b"\x00":
                 block = read_32_by_32_pixel_block(stream)
                 if previous_frame is not None:

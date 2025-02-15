@@ -3,6 +3,7 @@ from .ReiaFrame import ReiaFrame
 
 from PIL import Image, ImageChops
 
+import math
 import typing
 
 
@@ -88,24 +89,36 @@ def write_reia_frame(frame, previous_frame) -> bytes:
 
     width, height = frame.size[0], frame.size[1]
 
-    assert (width % 32) == 0
-    assert (height % 32) == 0
+    width_blocks = int(math.ceil(width / 32))
+    height_blocks = int(math.ceil(height / 32))
 
     # Frames are encoded as blocks of 32x32 pixels.
-    for i in range(width // 32):
-        for j in range(height // 32):
+    for i in range(height_blocks):
+        for j in range(width_blocks):
             # x and y coordinates where the top-left corner is 0,0
             x, y = (j * 32), (i * 32)
 
-            current_block = frame.crop((x, y, x + 32, y + 32))
+            current_block = crop_32_by_32_block(frame, x, y)
             previous_block = None
             if previous_frame:
-                previous_block = previous_frame.crop((x, y, x + 32, y + 32))
+                previous_block = crop_32_by_32_block(previous_frame, x, y)
 
             block = write_reia_block(current_block, previous_block)
             output.extend(block)
 
     return output
+
+
+def crop_32_by_32_block(frame: Image, x: int, y: int):
+    """Crop out a 32x32 block at (x, y), padding if needed."""
+    cropped = frame.crop((x, y, x + 32, y + 32))
+    if cropped.size[0] == 32 and cropped.size[1] == 32:
+        return cropped
+    # Pad to 32-32
+    print("Padding because block is ", cropped.size)
+    result = Image.new(cropped.mode, (32, 32))
+    result.paste(cropped, (0, 0))
+    return result
 
 
 def find_identical_runs(raw_bytes: bytes):

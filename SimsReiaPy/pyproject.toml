@@ -1,5 +1,8 @@
-[tool.poetry]
+[project]
+requires-python = ">=3.9"
 name = "sims_reia"
+
+[tool.poetry]
 version = "0.1.2"
 description = ""
 authors = ["Ammar Askar <ammar@ammaraskar.com>"]
@@ -8,8 +11,7 @@ homepage = "https://github.com/ammaraskar/SimsReiaParser"
 repository = "https://github.com/ammaraskar/SimsReiaParser/tree/main/SimsReiaPy"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-pillow = "^9.3.0"
+pillow = "^11.1.0"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -6,15 +6,18 @@ authors = ["Ammar Askar <ammar@ammaraskar.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.9,<3.14"
 sims-reia = {path = "../SimsReiaPy"}
+# Workaround for wxpython numpy being really old...
+numpy = "^1.26.0"
 # Workaround for wxpython not having this in their dependencies...
+attrdict3 = "^2.0.2"
 gooey = "^1.0.8.1"
 av = "^10.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
-pyinstaller = "^5.6.2"
+pyinstaller = "^6.12.0"
 black = "^22.10.0"
 
 [build-system]
