@@ -21,16 +21,6 @@ def run_converter_to_reia(args):
     if args.resize:
         target_width = 192
         target_height = 192
-    else:
-        if (
-            video.width == video.height
-            and (video.width % 32) == 0
-            and (video.height % 32) == 0
-        ):
-            needs_resize = False
-        target_resolution = max(video.width, video.height)
-        target_width = (target_resolution // 32) * 32
-        target_height = (target_resolution // 32) * 32
     print(f"Output resolution: {target_width}x{target_height}")
 
     # This is really horrible but if `video.frames` returns 0 we iterate decoding
