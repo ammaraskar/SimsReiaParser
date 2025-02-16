@@ -88,7 +88,6 @@ def initialize_convert_to_reia_parser(parser):
     input_group.add_argument(
         "--resize",
         metavar="Resize to 192x192",
-        default=True,
         action="store_true",
         help=(
             "Automatically resize video to default Sims 2 resolution.\n"

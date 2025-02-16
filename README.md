@@ -1,5 +1,5 @@
 # SimsReiaParser
-Libraries to parse and (maybe) encode .reia file for sims2
+Libraries to parse and encode .reia file for sims2
 
 https://user-images.githubusercontent.com/773529/204124123-9a72bdbb-1de3-4cf7-a1da-d0724fc9d3bc.mp4
 
