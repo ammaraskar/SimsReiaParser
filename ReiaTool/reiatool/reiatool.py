@@ -16,11 +16,15 @@ def run_converter_to_reia(args):
 
     video = container.streams.video[0]
 
-    # Sims needs .reia resolutions to be a square n by n.
-    needs_resize = True
+    # Sims neighborhood previews needs .reia resolutions to be a square n by n.
+    needs_resize = False
     if args.resize:
         target_width = 192
         target_height = 192
+        needs_resize = True
+    else:
+        target_width = video.width
+        target_height = video.height
     print(f"Output resolution: {target_width}x{target_height}")
 
     # This is really horrible but if `video.frames` returns 0 we iterate decoding
