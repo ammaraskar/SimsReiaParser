@@ -61,8 +61,10 @@ def read_from_file(stream: typing.BinaryIO) -> ReiaFile:
     if size_of_metadata != 24:
         raise ValueError(f"Reiahead metadata size not 24, got {size_of_metadata}")
 
-    # This value is checked to be always 1 in the real code. Just assert here.
-    assert _read_uint32_le(stream) == 1
+    # The next integer is always 1.
+    always_1 = _read_uint32_le(stream)
+    if always_1 != 1:
+        raise ValueError(f"Unexpected integer, expected 1, got {always_1}")
 
     width = _read_uint32_le(stream)
     height = _read_uint32_le(stream)
